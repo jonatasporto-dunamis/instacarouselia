@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Save } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 
 const brandIdentitySchema = z.object({
   brandName: z.string().min(1, 'Brand name is required.'),
@@ -77,7 +78,7 @@ export function BrandIdentityForm() {
               </FormItem>
             )}
           />
-           <div className="space-y-2">
+          <div className="space-y-2">
             <Label>Brand Colors</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <FormField
