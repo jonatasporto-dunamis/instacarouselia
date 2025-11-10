@@ -38,9 +38,9 @@ export function BrandIdentityForm() {
     resolver: zodResolver(brandIdentitySchema),
     defaultValues: {
       brandName: '',
-      primaryColor: '#8B5CF6',
-      secondaryColor: '#EC4899',
-      accentColor: '#F59E0B',
+      primaryColor: '#A020F0',
+      secondaryColor: '#E6D0FF',
+      accentColor: '#FFA500',
       typography: 'Poppins',
       brandTone: 'Friendly',
     },
@@ -89,7 +89,7 @@ export function BrandIdentityForm() {
                     <FormControl>
                       <div className="flex items-center gap-2">
                         <Input type="color" className="w-12 h-10 p-1" {...field} />
-                        <Input placeholder="#8B5CF6" {...field} />
+                        <Input placeholder="#A020F0" {...field} />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -101,11 +101,11 @@ export function BrandIdentityForm() {
                 name="secondaryColor"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs text-muted-foreground">Secondary</FormLabel>
+                    <FormLabel className="text-xs text-muted-foreground">Background</FormLabel>
                     <FormControl>
                       <div className="flex items-center gap-2">
                         <Input type="color" className="w-12 h-10 p-1" {...field} />
-                        <Input placeholder="#EC4899" {...field} />
+                        <Input placeholder="#E6D0FF" {...field} />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -121,7 +121,7 @@ export function BrandIdentityForm() {
                     <FormControl>
                       <div className="flex items-center gap-2">
                         <Input type="color" className="w-12 h-10 p-1" {...field} />
-                        <Input placeholder="#F59E0B" {...field} />
+                        <Input placeholder="#FFA500" {...field} />
                       </div>
                     </FormControl>
                     <FormMessage />
