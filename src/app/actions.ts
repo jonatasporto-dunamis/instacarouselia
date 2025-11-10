@@ -48,7 +48,7 @@ export async function saveApiKeysAction(
   apiKeys: Record<string, string>
 ): Promise<{ success?: boolean; error?: string }> {
   try {
-    const envPath = path.resolve(process.cwd(), '.env.local');
+    const envPath = path.resolve(process.cwd(), '.env');
     let envContent = '';
     try {
       envContent = await fs.readFile(envPath, 'utf-8');
@@ -58,31 +58,38 @@ export async function saveApiKeysAction(
       }
     }
 
-    const envLines = envContent.split('\n');
-    const newEnv: Record<string, string> = {};
-
-    envLines.forEach(line => {
-      if (line.trim() !== '' && !line.startsWith('#')) {
+    const envMap = new Map<string, string>();
+    envContent.split('\n').forEach(line => {
+      if (line.trim() && !line.startsWith('#')) {
         const [key, ...value] = line.split('=');
         if (key) {
-          newEnv[key.trim()] = value.join('=').trim();
+          envMap.set(key.trim(), value.join('=').trim());
         }
       }
     });
 
-    if (apiKeys.geminiApiKey) newEnv['GEMINI_API_KEY'] = apiKeys.geminiApiKey;
-    if (apiKeys.gptApiKey) newEnv['OPENAI_API_KEY'] = apiKeys.gptApiKey;
+    if (apiKeys.geminiApiKey) {
+      envMap.set('GEMINI_API_KEY', apiKeys.geminiApiKey);
+    }
+    if (apiKeys.gptApiKey) {
+      envMap.set('OPENAI_API_KEY', apiKeys.gptApiKey);
+    }
+    // Add other keys as needed
 
-    const newEnvContent = Object.entries(newEnv)
+    const newEnvContent = Array.from(envMap.entries())
       .map(([key, value]) => `${key}=${value}`)
       .join('\n');
-    
+
     await fs.writeFile(envPath, newEnvContent);
+
+    // This is important for Next.js to pick up the new env vars in development
+    // In production, a server restart is typically required.
+    revalidatePath('/'); 
 
     return { success: true };
   } catch (e) {
     console.error(e);
-    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
-    return { error: `Failed to save API keys: ${errorMessage}` };
+    const errorMessage = e instanceof Error ? e.message : 'Failed to save API keys.';
+    return { error: errorMessage };
   }
 }
