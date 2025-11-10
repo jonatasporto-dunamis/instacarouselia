@@ -26,6 +26,8 @@ import { Save } from 'lucide-react';
 const brandIdentitySchema = z.object({
   brandName: z.string().min(1, 'Brand name is required.'),
   primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color.'),
+  secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color.'),
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Must be a valid hex color.'),
   typography: z.string().min(1, 'Typography is required.'),
   brandTone: z.string().min(1, 'Brand tone is required.'),
 });
@@ -37,6 +39,8 @@ export function BrandIdentityForm() {
     defaultValues: {
       brandName: '',
       primaryColor: '#8B5CF6',
+      secondaryColor: '#EC4899',
+      accentColor: '#F59E0B',
       typography: 'Poppins',
       brandTone: 'Friendly',
     },
@@ -73,22 +77,59 @@ export function BrandIdentityForm() {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="primaryColor"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Primary Color</FormLabel>
-                <FormControl>
-                  <div className="flex items-center gap-2">
-                    <Input type="color" className="w-12 h-10 p-1" {...field} />
-                    <Input placeholder="#8B5CF6" {...field} />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+           <div className="space-y-2">
+            <FormLabel>Brand Colors</FormLabel>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="primaryColor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs text-muted-foreground">Primary</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center gap-2">
+                        <Input type="color" className="w-12 h-10 p-1" {...field} />
+                        <Input placeholder="#8B5CF6" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="secondaryColor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs text-muted-foreground">Secondary</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center gap-2">
+                        <Input type="color" className="w-12 h-10 p-1" {...field} />
+                        <Input placeholder="#EC4899" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="accentColor"
+                render={({ field }) => (
+                  <FormItem>
+                     <FormLabel className="text-xs text-muted-foreground">Accent</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center gap-2">
+                        <Input type="color" className="w-12 h-10 p-1" {...field} />
+                        <Input placeholder="#F59E0B" {...field} />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
           <FormField
             control={form.control}
             name="typography"
@@ -106,6 +147,10 @@ export function BrandIdentityForm() {
                     <SelectItem value="Inter">Inter</SelectItem>
                     <SelectItem value="Roboto">Roboto</SelectItem>
                     <SelectItem value="Lato">Lato</SelectItem>
+                    <SelectItem value="Montserrat">Montserrat</SelectItem>
+                    <SelectItem value="Open Sans">Open Sans</SelectItem>
+                    <SelectItem value="Raleway">Raleway</SelectItem>
+                    <SelectItem value="Nunito">Nunito</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -122,7 +167,7 @@ export function BrandIdentityForm() {
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a brand tone" />
-                    </SelectTrigger>
+                    </Trigger>
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="Friendly">Friendly</SelectItem>
