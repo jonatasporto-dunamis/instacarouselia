@@ -78,7 +78,7 @@ export function BrandIdentityForm() {
             )}
           />
            <div className="space-y-2">
-            <FormLabel>Brand Colors</FormLabel>
+            <Label>Brand Colors</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
