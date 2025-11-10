@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +23,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { useTransition } from 'react';
+import { saveApiKeysAction } from '@/app/actions';
+
 
 const apiSettingsSchema = z.object({
   geminiApiKey: z.string().optional(),
@@ -38,6 +42,8 @@ const apiSettingsSchema = z.object({
 
 export function ApiSettingsForm() {
   const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<z.infer<typeof apiSettingsSchema>>({
     resolver: zodResolver(apiSettingsSchema),
     defaultValues: {
@@ -55,10 +61,20 @@ export function ApiSettingsForm() {
   });
 
   function onSubmit(values: z.infer<typeof apiSettingsSchema>) {
-    console.log(values);
-    toast({
-      title: 'API Settings Saved',
-      description: 'Your API keys have been configured.',
+    startTransition(async () => {
+      const result = await saveApiKeysAction(values);
+      if (result.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error Saving Keys',
+          description: result.error,
+        });
+      } else {
+        toast({
+          title: 'API Settings Saved',
+          description: 'Your API keys have been configured. You may need to restart the application for changes to take effect.',
+        });
+      }
     });
   }
 
@@ -67,12 +83,12 @@ export function ApiSettingsForm() {
       <div>
         <h2 className="text-xl font-bold font-headline">API Settings</h2>
         <p className="text-muted-foreground">
-          Configure your API keys for generative features.
+          Configure your API keys for generative features. Restart the app after saving.
         </p>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <Accordion type="multiple" className="w-full space-y-4">
+          <Accordion type="multiple" className="w-full space-y-4" defaultValue={['ai-apis']}>
             <AccordionItem value="ai-apis" className="border rounded-lg px-4">
               <AccordionTrigger className="font-semibold">
                 <div className="flex items-center gap-2">
@@ -86,7 +102,7 @@ export function ApiSettingsForm() {
                   name="geminiApiKey"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Gemini API Key</FormLabel>
+                      <FormLabel>Gemini API Key (Google AI)</FormLabel>
                       <FormControl>
                         <Input type="password" placeholder="Enter your Gemini key" {...field} />
                       </FormControl>
@@ -229,9 +245,9 @@ export function ApiSettingsForm() {
             </AccordionItem>
           </Accordion>
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={isPending}>
             <Save className="mr-2 h-4 w-4" />
-            Save API Keys
+            {isPending ? 'Saving...' : 'Save API Keys'}
           </Button>
         </form>
       </Form>
