@@ -5,13 +5,15 @@ import type { CarouselApi } from '@/components/ui/carousel';
 import { useToast } from '@/hooks/use-toast';
 import type { Slide } from '@/lib/types';
 import { generateSlidesAction } from '@/app/actions';
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TopicForm } from './topic-form';
 import { SlideEditor } from './slide-editor';
 import { CarouselPreview } from './carousel-preview';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Lightbulb } from 'lucide-react';
+import { BrandIdentityForm } from './brand-identity-form';
+import { ApiSettingsForm } from './api-settings-form';
 
 export function CarouselGenerator() {
   const [isPending, startTransition] = useTransition();
@@ -66,18 +68,33 @@ export function CarouselGenerator() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
       <Card className="lg:col-span-1 shadow-lg">
-        <CardContent className="p-6">
-          <TopicForm
-            onGenerate={handleGenerateSlides}
-            isGenerating={isPending}
-          />
-          {slides.length > 0 && currentSlide && (
-            <SlideEditor
-              key={currentSlide.id}
-              slide={currentSlide}
-              onUpdate={updateSlide}
-            />
-          )}
+        <CardContent className="p-0">
+          <Tabs defaultValue="generator" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 rounded-t-lg rounded-b-none">
+              <TabsTrigger value="generator">Generator</TabsTrigger>
+              <TabsTrigger value="brand">Brand</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
+            <TabsContent value="generator" className="p-6">
+              <TopicForm
+                onGenerate={handleGenerateSlides}
+                isGenerating={isPending}
+              />
+              {slides.length > 0 && currentSlide && (
+                <SlideEditor
+                  key={currentSlide.id}
+                  slide={currentSlide}
+                  onUpdate={updateSlide}
+                />
+              )}
+            </TabsContent>
+            <TabsContent value="brand" className="p-6">
+              <BrandIdentityForm />
+            </TabsContent>
+            <TabsContent value="settings" className="p-6">
+              <ApiSettingsForm />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
