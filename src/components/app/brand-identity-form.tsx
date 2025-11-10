@@ -152,6 +152,8 @@ export function BrandIdentityForm() {
                     <SelectItem value="Open Sans">Open Sans</SelectItem>
                     <SelectItem value="Raleway">Raleway</SelectItem>
                     <SelectItem value="Nunito">Nunito</SelectItem>
+                    <SelectItem value="Merriweather">Merriweather</SelectItem>
+                    <SelectItem value="Playfair Display">Playfair Display</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -168,7 +170,7 @@ export function BrandIdentityForm() {
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a brand tone" />
-                    </Trigger>
+                    </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="Friendly">Friendly</SelectItem>
