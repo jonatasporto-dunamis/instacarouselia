@@ -8,7 +8,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from '@/components/ui/carousel';
-import { SlideCard } from './slide-card';
+import { SlideCanvas } from './slide-canvas';
 import type { Slide } from '@/lib/types';
 
 type CarouselPreviewProps = {
@@ -29,7 +29,7 @@ export function CarouselPreview({
           {slides.map(slide => (
             <CarouselItem key={slide.id}>
               <div className="p-1">
-                <SlideCard slide={slide} />
+                <SlideCanvas slide={slide} />
               </div>
             </CarouselItem>
           ))}

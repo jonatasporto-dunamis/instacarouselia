@@ -2,9 +2,9 @@
 'use server';
 
 import { generateCarouselSlides } from '@/lib/ai';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { Slide } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
+import { getSmartFallbackImage } from '@/lib/imageFallback';
 
 export async function generateSlidesAction(input: {
   topic: string;
@@ -30,18 +30,24 @@ export async function generateSlidesAction(input: {
       };
     }
 
-    const slides: Slide[] = generatedContent.map((item, index) => {
-      const placeholder = PlaceHolderImages[index % PlaceHolderImages.length];
-      return {
-        id: crypto.randomUUID(),
-        title: item.title,
-        content: Array.isArray(item.bullets) ? item.bullets.join('\n') : '',
-        imagePrompt: item.suggestion,
-        imageUrl: placeholder.imageUrl,
-        imageHint: placeholder.imageHint,
-        layout: item.suggestion ? 'image-top' : 'text-only',
-      };
-    });
+    const slides: Slide[] = await Promise.all(
+      generatedContent.map(async (item, index) => {
+        const fallback = await getSmartFallbackImage({
+          query: item.suggestion || item.title || 'marketing',
+        });
+
+        return {
+          id: crypto.randomUUID(),
+          title: item.title,
+          content: Array.isArray(item.bullets) ? item.bullets.join('\n') : '',
+          imagePrompt: item.suggestion,
+          imageUrl: fallback.imageUrl,
+          imageHint: item.suggestion || item.title,
+          imageProvider: fallback.provider,
+          layout: item.suggestion ? 'classic' : 'minimal', // Use 'classic' and 'minimal' as default layouts
+        };
+      })
+    );
 
     revalidatePath('/');
     return { slides };

@@ -1,53 +1,43 @@
+// This file is DEPRECATED and will be removed.
+// The logic has been moved to /src/lib/templates/registry.tsx and /src/components/app/slide-canvas.tsx
+// This is to support the new template system.
+
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import type { Slide } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
+import { TemplateId } from '@/lib/templates/types';
 
-type SlideCardProps = {
-  slide: Slide;
-};
-
-const layoutClasses = {
+// This is a simplified version for compatibility, the real logic is in the template registry.
+const layoutClasses: Record<TemplateId, string> = {
+  'classic': 'flex-col',
   'image-top': 'flex-col',
   'image-bottom': 'flex-col-reverse',
   'image-left': 'flex-col md:flex-row',
   'image-right': 'flex-col md:flex-row-reverse',
   'text-only': 'flex-col',
+  'full-bleed': 'relative',
+  'minimal': 'flex-col',
+  'headline': 'flex-col',
 };
 
-const imageContainerClasses = {
-  'image-top': 'w-full h-1/2',
-  'image-bottom': 'w-full h-1/2',
-  'image-left': 'w-full h-1/2 md:w-1/2 md:h-full',
-  'image-right': 'w-full h-1/2 md:w-1/2 md:h-full',
-  'text-only': 'hidden',
-};
-
-const textContainerClasses = {
-  'image-top': 'w-full h-1/2',
-  'image-bottom': 'w-full h-1/2',
-  'image-left': 'w-full h-1/2 md:w-1/2 md:h-full',
-  'image-right': 'w-full h-1/2 md:w-1/2 md:h-full',
-  'text-only': 'w-full h-full',
-};
-
-
-export function SlideCard({ slide }: SlideCardProps) {
+export function SlideCard({ slide }: { slide: Slide }) {
+  const layout = slide.layout || 'classic';
   return (
     <Card className="aspect-square w-full overflow-hidden shadow-xl">
       <CardContent
         className={cn(
           'flex h-full w-full p-0',
-          layoutClasses[slide.layout]
+          layoutClasses[layout]
         )}
       >
         <div
           className={cn(
             'relative shrink-0',
-            imageContainerClasses[slide.layout]
+            layout === 'text-only' || layout === 'minimal' || layout === 'headline' ? 'hidden' : 'w-full h-1/2'
           )}
         >
-          {slide.imageUrl && slide.layout !== 'text-only' && (
+          {slide.imageUrl && (
             <Image
               src={slide.imageUrl}
               alt={slide.imagePrompt || slide.title}
@@ -59,8 +49,7 @@ export function SlideCard({ slide }: SlideCardProps) {
         </div>
         <div
           className={cn(
-            'flex flex-col justify-center items-center p-8 text-center shrink-0 grow',
-            textContainerClasses[slide.layout]
+            'flex flex-col justify-center items-center p-8 text-center shrink-0 grow'
           )}
         >
           <h3 className="font-headline text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
