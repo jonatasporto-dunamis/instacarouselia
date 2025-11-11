@@ -32,62 +32,82 @@ export function connectMetaAccount() {
 
 
 /**
- * Placeholder function to fetch Instagram insights.
+ * Fetches Instagram insights for a given account.
  *
  * @param {string} accessToken - The user's stored access token.
  * @param {string} instagramAccountId - The user's Instagram Business Account ID.
- * @returns {Promise<object>} - A promise that resolves to the insights data.
+ * @returns {Promise<any>} - A promise that resolves to the insights data.
  */
 export async function fetchInstagramInsights(accessToken: string, instagramAccountId: string): Promise<any> {
-  // TODO: Implement the call to the Meta Graph API.
-  // This would typically be done in a server-side API route for security.
-  // Example endpoint: `https://graph.facebook.com/${instagramAccountId}?fields=followers_count,engagement&access_token=${accessToken}`
-  console.log('Fetching insights for account:', instagramAccountId);
-  
-  if (!accessToken) {
-    throw new Error('User is not authenticated with Meta.');
-  }
-  
-  // This is mock data. A real implementation would fetch from the API.
-  const mockInsights = {
-    followers_count: 12345,
-    engagement: 3.4,
-  };
-  
-  return Promise.resolve(mockInsights);
+    const response = await fetch(
+        `https://graph.facebook.com/v20.0/${instagramAccountId}/insights?metric=impressions,reach,engagement,followers_count&period=day&access_token=${accessToken}`
+    );
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error.message || 'Failed to fetch insights.');
+    }
+    return await response.json();
 }
 
 /**
- * Placeholder function to fetch a user's top-performing posts.
+ * Fetches a user's most recent media.
  *
  * @param {string} accessToken - The user's stored access token.
  * @param {string} instagramAccountId - The user's Instagram Business Account ID.
- * @returns {Promise<Array<object>>} - A promise that resolves to a list of top posts.
+ * @returns {Promise<any[]>} - A promise that resolves to a list of top posts.
  */
 export async function fetchTopPosts(accessToken: string, instagramAccountId: string): Promise<any[]> {
-    // TODO: Implement the call to the Meta Graph API.
-    // Example endpoint: `https://graph.facebook.com/${instagramAccountId}/media?fields=like_count,comments_count,media_url,caption&access_token=${accessToken}`
-    console.log('Fetching top posts for account:', instagramAccountId);
-    return Promise.resolve([]);
+    const response = await fetch(
+        `https://graph.facebook.com/v20.0/${instagramAccountId}/media?fields=id,caption,like_count,comments_count,media_url,permalink&access_token=${accessToken}`
+    );
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error.message || 'Failed to fetch posts.');
+    }
+    const data = await response.json();
+    return data.data?.slice(0, 5) || [];
 }
 
 /**
- * Placeholder function to publish a carousel to Instagram.
+ * Publishes a single image post to Instagram.
+ * NOTE: This is a simplified version. A full carousel publication is a multi-step process.
  *
  * @param {string} accessToken - The user's stored access token.
  * @param {string} instagramAccountId - The user's Instagram Business Account ID.
- * @param {Array<string>} slideImageUrls - An array of publicly accessible URLs for the slide images.
- * @param {string} caption - The caption for the carousel.
- * @returns {Promise<string>} - A promise that resolves to the ID of the published post.
+ * @param {string[]} slideImageUrls - An array of publicly accessible URLs for the slide images. Only the first is used.
+ * @param {string} caption - The caption for the post.
+ * @returns {Promise<any>} - A promise that resolves to the publication response.
  */
-export async function publishToInstagram(accessToken: string, instagramAccountId: string, slideImageUrls: string[], caption: string): Promise<string> {
-    // TODO: This is a complex multi-step process:
-    // 1. For each image URL, upload it to Instagram's servers to get a container ID.
-    // 2. Once all images are uploaded, create a carousel container with all the container IDs.
-    // 3. Publish the final carousel container.
-    // This entire flow must be managed on the server side.
-    console.log('Publishing carousel to account:', instagramAccountId, { slideImageUrls, caption });
-    
-    // Returning a mock publication ID
-    return Promise.resolve('mock_publication_id_12345');
+export async function publishToInstagram(accessToken: string, instagramAccountId: string, slideImageUrls: string[], caption: string): Promise<any> {
+    const imageUrl = slideImageUrls[0];
+    if (!imageUrl) {
+        throw new Error('No image URL provided for publication.');
+    }
+
+    // 1. Create a media container for the image
+    const createContainerResponse = await fetch(
+        `https://graph.facebook.com/v20.0/${instagramAccountId}/media?image_url=${encodeURIComponent(imageUrl)}&caption=${encodeURIComponent(caption)}&access_token=${accessToken}`,
+        { method: "POST" }
+    );
+    if (!createContainerResponse.ok) {
+        const error = await createContainerResponse.json();
+        throw new Error(error.error.message || 'Failed to create media container.');
+    }
+    const { id: creationId } = await createContainerResponse.json();
+    if (!creationId) {
+        throw new Error('Media container creation did not return an ID.');
+    }
+
+    // 2. Publish the container
+    const publishResponse = await fetch(
+        `https://graph.facebook.com/v20.0/${instagramAccountId}/media_publish?creation_id=${creationId}&access_token=${accessToken}`,
+        { method: "POST" }
+    );
+
+    if (!publishResponse.ok) {
+        const error = await publishResponse.json();
+        throw new Error(error.error.message || 'Failed to publish media.');
+    }
+
+    return await publishResponse.json();
 }
