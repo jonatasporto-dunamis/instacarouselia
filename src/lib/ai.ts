@@ -5,10 +5,16 @@ type Brand = { name?: string; tone?: string };
 type GenArgs = { topic: string; brand?: Brand };
 type GenOpts = { provider?: "openai" | "gemini"; apiKey?: string; model?: string };
 
+type SlideContent = {
+  title: string;
+  bullets: string[];
+  suggestion?: string;
+};
+
 export async function generateCarouselSlides(
   { topic, brand }: GenArgs,
   opts?: GenOpts
-) {
+): Promise<SlideContent[]> {
   const provider =
     opts?.provider ??
     (process.env.OPENAI_API_KEY ? "openai" : (process.env.GEMINI_API_KEY ? "gemini" : undefined));
@@ -40,7 +46,7 @@ export async function generateCarouselSlides(
         return parsed.slides || [];
     } catch (e) {
         console.error("Failed to parse JSON from OpenAI:", content);
-        return [];
+        throw new Error("Received invalid JSON response from AI.");
     }
   }
 
@@ -63,9 +69,9 @@ export async function generateCarouselSlides(
         return parsed.slides || [];
     } catch(e) {
         console.error("Failed to parse JSON from Gemini:", txt);
-        return [];
+        throw new Error("Received invalid JSON response from AI.");
     }
   }
 
-  throw new Error("No AI key found. Configure it in Settings or .env.local.");
+  throw new Error("No AI provider key found. Please configure it in Settings or via .env.local.");
 }

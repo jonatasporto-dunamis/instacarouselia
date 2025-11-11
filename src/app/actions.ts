@@ -26,7 +26,7 @@ export async function generateSlidesAction(input: {
     if (!generatedContent || generatedContent.length === 0) {
       return {
         error:
-          'Failed to generate slides. The AI did not return a valid response.',
+          'Failed to generate slides. The AI did not return valid content.',
       };
     }
 
@@ -50,7 +50,7 @@ export async function generateSlidesAction(input: {
     const errorMessage =
       e instanceof Error ? e.message : 'An unknown error occurred.';
     return {
-      error: `An unexpected error occurred: ${errorMessage}. Configure the key in Settings or .env.local.`,
+      error: `An unexpected error occurred: ${errorMessage}. Please check your API key in Settings or .env.local.`,
     };
   }
 }
