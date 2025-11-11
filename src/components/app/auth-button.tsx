@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser, useAuth } from '@/firebase';
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { LogIn, LogOut, User as UserIcon, Presentation, GalleryHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -75,6 +76,10 @@ export function AuthButton() {
         <DropdownMenuItem onClick={() => router.push('/dashboard')}>
             <Presentation className="mr-2 h-4 w-4" />
             <span>Dashboard</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/my-carousels')}>
+            <GalleryHorizontal className="mr-2 h-4 w-4" />
+            <span>My Carousels</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>

@@ -12,18 +12,30 @@ import { SlideEditor } from './slide-editor';
 import { CarouselPreview } from './carousel-preview';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Lightbulb, Square, RectangleVertical, Smartphone } from 'lucide-react';
+import { Lightbulb, Square, RectangleVertical, Smartphone, Save } from 'lucide-react';
 import { BrandIdentityForm } from './brand-identity-form';
 import { ApiSettingsForm } from './api-settings-form';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { useUser } from '@/firebase';
+import { addDoc, collection } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { doc, serverTimestamp } from 'firebase/firestore';
+
 
 export type SlideFormat = 'square' | 'portrait' | 'story';
 
 export function CarouselGenerator() {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const router = useRouter();
 
+  const [topic, setTopic] = useState('');
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [api, setApi] = useState<CarouselApi>();
@@ -54,7 +66,8 @@ export function CarouselGenerator() {
     }
   }
 
-  const handleGenerateSlides = (topic: string) => {
+  const handleGenerateSlides = (newTopic: string) => {
+    setTopic(newTopic);
     startTransition(async () => {
       const provider = localStorage.getItem('ai.provider') as
         | 'openai'
@@ -64,7 +77,7 @@ export function CarouselGenerator() {
       const model = localStorage.getItem('ai.model') || undefined;
 
       const result = await generateSlidesAction({
-        topic,
+        topic: newTopic,
         provider: provider || undefined,
         apiKey,
         model,
@@ -95,6 +108,70 @@ export function CarouselGenerator() {
       )
     );
   };
+  
+  const handleSaveCarousel = async () => {
+    if (!user || !firestore) {
+      toast({
+        variant: 'destructive',
+        title: 'Not Logged In',
+        description: 'You must be logged in to save a carousel.',
+      });
+      return;
+    }
+    if (slides.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'No Content',
+        description: 'Generate some slides before saving.',
+      });
+      return;
+    }
+
+    try {
+      const carouselId = crypto.randomUUID();
+      const carouselRef = doc(firestore, 'users', user.uid, 'carousels', carouselId);
+      
+      const slideIds = slides.map(s => s.id);
+
+      // Save the main carousel document
+      setDocumentNonBlocking(carouselRef, {
+        id: carouselId,
+        userId: user.uid,
+        topic: topic,
+        slideIds: slideIds,
+        createdAt: serverTimestamp(),
+        lastModified: serverTimestamp(),
+      }, { merge: false });
+
+      // Save each slide as a subcollection document
+      for (let i = 0; i < slides.length; i++) {
+        const slide = slides[i];
+        const slideRef = doc(firestore, 'users', user.uid, 'carousels', carouselId, 'slides', slide.id);
+        setDocumentNonBlocking(slideRef, {
+          ...slide,
+          carouselId: carouselId,
+          userId: user.uid,
+          order: i,
+        }, { merge: false });
+      }
+
+      toast({
+        title: 'Carousel Saved!',
+        description: 'Your carousel has been saved to your gallery.',
+      });
+      
+      router.push('/my-carousels');
+
+    } catch (e: any) {
+      console.error('Failed to save carousel:', e);
+      toast({
+        variant: 'destructive',
+        title: 'Save Failed',
+        description: e.message || 'An unexpected error occurred while saving.',
+      });
+    }
+  };
+
 
   const currentSlide = slides[currentSlideIndex];
 
@@ -137,6 +214,7 @@ export function CarouselGenerator() {
                   key={currentSlide.id}
                   slide={currentSlide}
                   onUpdate={updateSlide}
+                  onSave={handleSaveCarousel}
                 />
               )}
             </TabsContent>

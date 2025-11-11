@@ -1,9 +1,11 @@
+
 'use client';
 
 import {
   Download,
   Image as ImageIcon,
   LayoutTemplate,
+  Save,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -21,9 +23,10 @@ import { getSmartFallbackImage } from '@/lib/imageFallback';
 type SlideEditorProps = {
   slide: Slide;
   onUpdate: (id: string, updatedProps: Partial<Slide>) => void;
+  onSave: () => void;
 };
 
-export function SlideEditor({ slide, onUpdate }: SlideEditorProps) {
+export function SlideEditor({ slide, onUpdate, onSave }: SlideEditorProps) {
   const { toast } = useToast();
   const [isFetching, startFetching] = useTransition();
 
@@ -162,7 +165,11 @@ export function SlideEditor({ slide, onUpdate }: SlideEditorProps) {
           />
         </div>
       </div>
-
+      
+      <Button className="w-full" onClick={onSave}>
+        <Save className="mr-2 h-4 w-4" />
+        Save Carousel
+      </Button>
       <Button variant="outline" className="w-full" onClick={handleExport}>
         <Download className="mr-2 h-4 w-4" />
         Export Full Carousel
