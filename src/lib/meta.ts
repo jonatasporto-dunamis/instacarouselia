@@ -68,6 +68,46 @@ export async function fetchTopPosts(accessToken: string, instagramAccountId: str
     return data.data?.slice(0, 5) || [];
 }
 
+export async function fetchTopPostsByMetric(
+  accessToken: string,
+  instagramAccountId: string,
+  since: Date,
+  until: Date
+): Promise<any[]> {
+  const sinceTimestamp = Math.floor(since.getTime() / 1000);
+  const untilTimestamp = Math.floor(until.getTime() / 1000);
+
+  const url = new URL(`https://graph.facebook.com/v20.0/${instagramAccountId}/media`);
+  url.searchParams.set('access_token', accessToken);
+  url.searchParams.set('since', String(sinceTimestamp));
+  url.searchParams.set('until', String(untilTimestamp));
+  url.searchParams.set('fields', 'id,caption,media_url,permalink,like_count,comments_count,insights.metric(engagement,impressions,reach)');
+  
+  const response = await fetch(url.toString());
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.message || 'Failed to fetch media by metric.');
+  }
+
+  const data = await response.json();
+
+  // Process and enrich the data
+  const processedPosts = data.data?.map((post: any) => {
+    const insights = post.insights?.data;
+    const reach = insights?.find((i: any) => i.name === 'reach')?.values[0]?.value || 0;
+    const engagement = insights?.find((i: any) => i.name === 'engagement')?.values[0]?.value || 0;
+    return {
+      ...post,
+      reach,
+      engagement,
+    };
+  }) || [];
+
+  return processedPosts;
+}
+
+
 /**
  * Publishes a single image post to Instagram.
  * NOTE: This is a simplified version. A full carousel publication is a multi-step process.

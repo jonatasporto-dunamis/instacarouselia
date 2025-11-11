@@ -1,19 +1,30 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Instagram, Users, BarChart3, Heart, MessageCircle, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Instagram, Users, BarChart3, Heart, MessageCircle, Loader2, ExternalLink } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import Image from 'next/image';
 import Link from 'next/link';
 import { useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
-import { fetchInstagramInsights, fetchTopPosts } from '@/lib/meta';
+import { fetchInstagramInsights, fetchTopPostsByMetric } from '@/lib/meta';
 import { Skeleton } from '@/components/ui/skeleton';
+import { subDays } from 'date-fns';
 
-// Define types for the data we expect
+type Metric = 'like_count' | 'comments_count' | 'engagement' | 'reach';
+type Period = '7' | '30' | '90';
+
 interface InstagramProfile {
   id: string;
   accessToken: string;
@@ -23,53 +34,85 @@ interface InstagramProfile {
 
 interface Insights {
   followers_count: number;
-  engagement: number;
-  reach: number;
-  impressions: number;
+  engagement_rate: number; // This will be calculated
 }
 
 interface Post {
   id: string;
   media_url: string;
   permalink: string;
+  caption: string;
   like_count: number;
   comments_count: number;
+  reach: number;
+  engagement: number;
 }
 
+function PerformancePostCard({ post }: { post: Post }) {
+    return (
+        <Card className="overflow-hidden flex flex-col">
+            <div className="aspect-square relative bg-muted">
+                {post.media_url && (
+                  <Image src={post.media_url} alt={`Post by ${post.caption?.substring(0, 30)}`} fill className="object-cover" />
+                )}
+            </div>
+            <CardContent className="p-4 flex-grow space-y-3">
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                    {post.caption || 'Sem legenda'}
+                </p>
+                <div className="flex justify-between items-center text-sm font-medium">
+                     <div className="flex items-center gap-1.5" title="Curtidas">
+                        <Heart className="w-4 h-4 text-pink-500" /> <span>{post.like_count.toLocaleString('pt-BR')}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5" title="Comentários">
+                        <MessageCircle className="w-4 h-4 text-sky-500" /> <span>{post.comments_count.toLocaleString('pt-BR')}</span>
+                    </div>
+                     <div className="flex items-center gap-1.5" title="Alcance">
+                        <BarChart3 className="w-4 h-4 text-indigo-500" /> <span>{post.reach.toLocaleString('pt-BR')}</span>
+                    </div>
+                </div>
+            </CardContent>
+            <CardFooter className="p-4 pt-0">
+                 <Button variant="outline" className="w-full" asChild>
+                    <Link href={post.permalink} target="_blank">
+                        <ExternalLink className="mr-2 h-4 w-4" /> Ver no Instagram
+                    </Link>
+                </Button>
+            </CardFooter>
+        </Card>
+    )
+}
 
 function LoadingState() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Seguidores</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-8 w-24 mb-2" />
-            <Skeleton className="h-4 w-32" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Engajamento (30 dias)</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-8 w-16 mb-2" />
-            <Skeleton className="h-4 w-36" />
-          </CardContent>
-        </Card>
+        {[...Array(2)].map((_, i) => (
+            <Card key={i}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-5 w-5 rounded-full" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-8 w-16 mb-2" />
+                    <Skeleton className="h-4 w-32" />
+                </CardContent>
+            </Card>
+        ))}
       </div>
       <div>
-        <h3 className="text-lg font-semibold font-headline mb-4">Posts Recentes</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
+        <h3 className="text-2xl font-bold font-headline mb-4">📈 Posts de Melhor Desempenho</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i} className="overflow-hidden">
-              <Skeleton className="aspect-[4/5] w-full" />
-              <div className="p-4">
-                <Skeleton className="h-5 w-full" />
+              <Skeleton className="aspect-square w-full" />
+              <div className="p-4 space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+               <div className="p-4 pt-0">
+                <Skeleton className="h-10 w-full" />
               </div>
             </Card>
           ))}
@@ -82,29 +125,37 @@ function LoadingState() {
 
 function ConnectedView({ profile }: { profile: InstagramProfile }) {
     const [insights, setInsights] = useState<Insights | null>(null);
-    const [posts, setPosts] = useState<Post[] | null>(null);
+    const [posts, setPosts] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    
+    const [period, setPeriod] = useState<Period>('30');
+    const [metric, setMetric] = useState<Metric>('engagement');
 
     useEffect(() => {
         async function fetchData() {
             setIsLoading(true);
             setError(null);
             try {
-                // In a real app, you might want to call these in parallel
-                const insightsData = await fetchInstagramInsights(profile.accessToken, profile.instagramAccountId);
-                const topPostsData = await fetchTopPosts(profile.accessToken, profile.instagramAccountId);
+                // Fetch general insights and top posts in parallel
+                const [insightsData, postsData] = await Promise.all([
+                    fetchInstagramInsights(profile.accessToken, profile.instagramAccountId),
+                    fetchTopPostsByMetric(
+                        profile.accessToken, 
+                        profile.instagramAccountId,
+                        subDays(new Date(), parseInt(period)),
+                        new Date()
+                    )
+                ]);
                 
-                // Process insights data (you might need to adjust this based on actual API response)
                 const followers = insightsData.data?.find((d:any) => d.name === 'followers_count')?.values.pop()?.value || 0;
                 
                 setInsights({
                     followers_count: followers,
-                    engagement: 3.4, // Placeholder, engagement rate needs calculation
-                    reach: 0, // Placeholder
-                    impressions: 0, // Placeholder
+                    engagement_rate: 3.4, // Placeholder, rate calculation is complex
                 });
-                setPosts(topPostsData);
+
+                setPosts(postsData);
 
             } catch (e: any) {
                 console.error("Failed to fetch Instagram data:", e);
@@ -115,9 +166,14 @@ function ConnectedView({ profile }: { profile: InstagramProfile }) {
         }
 
         fetchData();
-    }, [profile]);
+    }, [profile, period]); // Refetch when profile or period changes
 
-    if (isLoading) {
+    const sortedPosts = useMemo(() => {
+        return [...posts].sort((a, b) => b[metric] - a[metric]);
+    }, [posts, metric]);
+
+
+    if (isLoading && posts.length === 0) { // Show initial loading state only on first load
         return <LoadingState />;
     }
 
@@ -140,7 +196,7 @@ function ConnectedView({ profile }: { profile: InstagramProfile }) {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -154,36 +210,65 @@ function ConnectedView({ profile }: { profile: InstagramProfile }) {
                 </Card>
                  <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Engajamento (30 dias)</CardTitle>
+                        <CardTitle className="text-sm font-medium">Engajamento Médio</CardTitle>
                         <BarChart3 className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{insights?.engagement || 0}%</div>
+                        <div className="text-2xl font-bold">{insights?.engagement_rate || 0}%</div>
                         {/* <p className="text-xs text-muted-foreground">Média do seu nicho: 2.8%</p> */}
                     </CardContent>
                 </Card>
             </div>
              <div>
-                <h3 className="text-lg font-semibold font-headline mb-4">Posts Recentes</h3>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {posts?.map(post => (
-                        <Card key={post.id} className="overflow-hidden">
-                            <div className="aspect-[4/5] relative bg-muted">
-                                {post.media_url && <Image src={post.media_url} alt={`Post ${post.id}`} fill className="object-cover w-full h-full" />}
-                            </div>
-                            <div className="p-4 text-sm">
-                                <div className="flex justify-between items-center text-muted-foreground">
-                                    <div className="flex items-center gap-1">
-                                        <Heart className="w-4 h-4"/> <span>{post.like_count}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <MessageCircle className="w-4 h-4"/> <span>{post.comments_count}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-                    ))}
-                 </div>
+                <div className="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
+                    <h3 className="text-2xl font-bold font-headline">📈 Posts de Melhor Desempenho</h3>
+                     <div className="flex items-center gap-4">
+                        <div className="grid gap-1.5">
+                            <Label htmlFor="period">Período</Label>
+                             <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
+                                <SelectTrigger className="w-full md:w-[150px]" id="period">
+                                    <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="7">Últimos 7 dias</SelectItem>
+                                    <SelectItem value="30">Últimos 30 dias</SelectItem>
+                                    <SelectItem value="90">Últimos 90 dias</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="grid gap-1.5">
+                            <Label htmlFor="metric">Ordenar por</Label>
+                            <Select value={metric} onValueChange={(v) => setMetric(v as Metric)}>
+                                <SelectTrigger className="w-full md:w-[150px]" id="metric">
+                                    <SelectValue placeholder="Selecione" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="engagement">Engajamento</SelectItem>
+                                    <SelectItem value="reach">Alcance</SelectItem>
+                                    <SelectItem value="like_count">Curtidas</SelectItem>
+                                    <SelectItem value="comments_count">Comentários</SelectItem>
+                                </SelectContent>
+                            </Select>
+                         </div>
+                         {isLoading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+                     </div>
+                </div>
+
+                 {sortedPosts.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {sortedPosts.map(post => <PerformancePostCard key={post.id} post={post} />)}
+                    </div>
+                 ) : (
+                    <Card>
+                        <CardContent className="p-10 text-center">
+                            <Instagram className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                            <h2 className="text-xl font-semibold">Nenhum post encontrado</h2>
+                            <p className="text-muted-foreground">
+                                Nenhum post foi encontrado no período selecionado. Tente ajustar os filtros.
+                            </p>
+                        </CardContent>
+                    </Card>
+                 )}
             </div>
         </div>
     )
@@ -231,5 +316,3 @@ export function InstagramDashboard() {
 
     return isConnected ? <ConnectedView profile={profile} /> : <DisconnectedView />;
 }
-
-    

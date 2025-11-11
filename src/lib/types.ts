@@ -21,5 +21,5 @@ export type Slide = {
   imageUrl?: string;
   imageHint?: string;
   imageProvider?: ImageProvider;
-  layout: Layout;
+  layout?: Layout;
 };
