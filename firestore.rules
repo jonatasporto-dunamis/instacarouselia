@@ -35,7 +35,7 @@ service cloud.firestore {
     /**
      * @description Manages access to carousels owned by a specific user.
      * @path /users/{userId}/carousels/{carouselId}
-     * @allow (create) User 'user_abc' can create a carousel if request.auth.uid == 'user_abc'.
+     * @allow (create) User 'user_abc' can create a carousel if request.auth.uid == 'user_abc' and the document's userId field matches.
      * @allow (get) User 'user_abc' can get a carousel if request.auth.uid == 'user_abc'.
      * @allow (update) User 'user_abc' can update a carousel if request.auth.uid == 'user_abc' and the carousel exists.
      * @allow (delete) User 'user_abc' can delete a carousel if request.auth.uid == 'user_abc' and the carousel exists.
@@ -48,8 +48,8 @@ service cloud.firestore {
     match /users/{userId}/carousels/{carouselId} {
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
@@ -69,8 +69,8 @@ service cloud.firestore {
     match /users/{userId}/carousels/{carouselId}/slides/{slideId} {
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
     }
   }

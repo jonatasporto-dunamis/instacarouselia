@@ -10,6 +10,10 @@
           "type": "string",
           "description": "Unique identifier for the carousel."
         },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who owns this carousel."
+        },
         "topic": {
           "type": "string",
           "description": "The topic used to generate the carousel."
@@ -34,6 +38,7 @@
       },
       "required": [
         "id",
+        "userId",
         "topic",
         "slideIds",
         "createdAt",
@@ -54,6 +59,10 @@
           "type": "string",
           "description": "Reference to Carousel. (Relationship: Carousel 1:N Slide)"
         },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who owns this slide."
+        },
         "content": {
           "type": "string",
           "description": "The text content of the slide."
@@ -70,6 +79,7 @@
       "required": [
         "id",
         "carouselId",
+        "userId",
         "content",
         "layout",
         "order"
@@ -79,7 +89,8 @@
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "google.com"
     ]
   },
   "firestore": {
