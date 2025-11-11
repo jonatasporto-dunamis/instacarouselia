@@ -50,7 +50,7 @@ export async function generateSlidesAction(input: {
     const errorMessage =
       e instanceof Error ? e.message : 'An unknown error occurred.';
     return {
-      error: `An unexpected error occurred: ${errorMessage}. Configure a chave em Settings ou .env.local.`,
+      error: `An unexpected error occurred: ${errorMessage}. Configure the key in Settings or .env.local.`,
     };
   }
 }
