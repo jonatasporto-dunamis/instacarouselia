@@ -6,6 +6,7 @@ import {
   Image as ImageIcon,
   LayoutTemplate,
   Save,
+  Send,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -30,13 +31,31 @@ export function SlideEditor({ slide, onUpdate, onSave }: SlideEditorProps) {
   const { toast } = useToast();
   const [isFetching, startFetching] = useTransition();
 
-  const handleExport = () => {
+  // In a real app, this would be determined by checking for a valid Meta token in Firestore
+  const isMetaConnected = false; 
+
+  const handlePublish = async () => {
+    if (!isMetaConnected) {
+      toast({
+        variant: 'destructive',
+        title: 'Instagram não conectado',
+        description: 'Por favor, conecte sua conta do Instagram no Dashboard para publicar.',
+      });
+      return;
+    }
+
+    // Future logic to call Meta Graph API
     toast({
-      title: 'Exporting Carousel',
-      description: 'Your carousel is being prepared for download.',
+        title: 'Publicando seu carrossel...',
+        description: 'Isso pode levar alguns instantes.',
     });
-    console.log('Exporting carousel...');
-  };
+    console.log('Publishing to Instagram...');
+    // Here you would call a server action to:
+    // 1. Get slide images.
+    // 2. Upload each image to get a container ID.
+    // 3. Create a carousel container with all IDs.
+    // 4. Publish the final container.
+  }
 
   const handleFetchImage = (useFallback: boolean = false) => {
     const query = slide.imagePrompt || slide.title;
@@ -166,14 +185,20 @@ export function SlideEditor({ slide, onUpdate, onSave }: SlideEditorProps) {
         </div>
       </div>
       
-      <Button className="w-full" onClick={onSave}>
-        <Save className="mr-2 h-4 w-4" />
-        Save Carousel
+      <div className="space-y-2">
+        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white" onClick={handlePublish}>
+            <Send className="mr-2 h-4 w-4" />
+            Publicar no Instagram
+        </Button>
+        <Button className="w-full" onClick={onSave}>
+            <Save className="mr-2 h-4 w-4" />
+            Salvar Carrossel
+        </Button>
+        <Button variant="outline" className="w-full" onClick={() => console.log('Exporting...')}>
+            <Download className="mr-2 h-4 w-4" />
+            Exportar como PNG
       </Button>
-      <Button variant="outline" className="w-full" onClick={handleExport}>
-        <Download className="mr-2 h-4 w-4" />
-        Export Full Carousel
-      </Button>
+      </div>
     </div>
   );
 }
