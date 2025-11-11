@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import React from 'react';
 
 const apiSettingsSchema = z.object({
   provider: z.enum(['openai', 'gemini']).default('openai'),
@@ -42,23 +43,27 @@ export function ApiSettingsForm() {
 
   const form = useForm<z.infer<typeof apiSettingsSchema>>({
     resolver: zodResolver(apiSettingsSchema),
-    defaultValues: () => {
-      if (typeof window === 'undefined') {
-        return {
-          provider: 'openai',
-          apiKey: '',
-          model: '',
-        };
-      }
-      return {
-        provider:
-          (localStorage.getItem('ai.provider') as 'openai' | 'gemini') ||
-          'openai',
-        apiKey: localStorage.getItem('ai.key') || '',
-        model: localStorage.getItem('ai.model') || '',
-      };
+    defaultValues: {
+        provider: 'openai',
+        apiKey: '',
+        model: '',
     },
   });
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+        const storedProvider = localStorage.getItem('ai.provider') as 'openai' | 'gemini' | null;
+        const storedApiKey = localStorage.getItem('ai.key');
+        const storedModel = localStorage.getItem('ai.model');
+        
+        form.reset({
+            provider: storedProvider || 'openai',
+            apiKey: storedApiKey || '',
+            model: storedModel || '',
+        });
+    }
+  }, [form]);
+
 
   function onSubmit(values: z.infer<typeof apiSettingsSchema>) {
     try {
@@ -117,7 +122,7 @@ export function ApiSettingsForm() {
                       <FormLabel>Provider</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
