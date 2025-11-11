@@ -1,3 +1,4 @@
+
 import { CarouselGenerator } from '@/components/app/carousel-generator';
 import { Header } from '@/components/app/header';
 
