@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LogIn, LogOut, User as UserIcon, Presentation, GalleryHorizontal } from 'lucide-react';
+import { LogIn, LogOut, User as UserIcon, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -32,7 +32,7 @@ export function AuthButton() {
   };
 
   if (isUserLoading) {
-    return <Skeleton className="h-10 w-24" />;
+    return <Skeleton className="h-10 w-10 rounded-full" />;
   }
 
   if (!user) {
@@ -56,8 +56,8 @@ export function AuthButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <Avatar className="h-10 w-10">
+        <Button variant="outline" size="icon" className="overflow-hidden rounded-full">
+           <Avatar className="h-9 w-9">
             <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''} />
             <AvatarFallback>
               {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || <UserIcon />}
@@ -65,27 +65,14 @@ export function AuthButton() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.displayName || 'Usuário'}</p>
-            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-          </div>
-        </DropdownMenuLabel>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push('/dashboard')}>
-            <Presentation className="mr-2 h-4 w-4" />
-            <span>Dashboard</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push('/my-carousels')}>
-            <GalleryHorizontal className="mr-2 h-4 w-4" />
-            <span>My Carousels</span>
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/dashboard')}>Dashboard</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/my-carousels')}>Meus Carrosséis</DropdownMenuItem>
+        <DropdownMenuItem disabled>Configurações</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Sair</span>
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>Sair</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

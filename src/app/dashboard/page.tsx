@@ -2,11 +2,11 @@
 'use client';
 
 import { CarouselGenerator } from '@/components/app/carousel-generator';
-import { Header } from '@/components/app/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUser } from '@/firebase';
 import { Instagram, Users, BarChart3, Image as ImageIcon, Heart, MessageCircle } from 'lucide-react';
+import { AppLayout } from '@/components/app/app-layout';
 
 const mockStats = {
   followers: 12543,
@@ -96,12 +96,9 @@ function InstagramDashboard() {
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <Header />
-      <main className="flex-1 p-4 sm:p-6 md:p-8">
+    <AppLayout>
         <InstagramDashboard />
         <CarouselGenerator />
-      </main>
-    </div>
+    </AppLayout>
   );
 }

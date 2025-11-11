@@ -19,8 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import Link from 'next/link';
-import { Header } from '@/components/app/header';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Presentation } from 'lucide-react';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Por favor, insira um e-mail válido.'),
@@ -56,7 +55,16 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header />
+      <header className="p-4 border-b">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+            <Presentation className="w-6 h-6" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground font-headline">
+            Dunamis<span className="text-primary">Post</span>
+          </h1>
+        </Link>
+      </header>
       <main className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
@@ -89,7 +97,7 @@ export default function ForgotPasswordPage() {
             <div className="mt-6 text-center">
                 <Button variant="ghost" asChild>
                     <Link href="/login">
-                        <ArrowLeft className="mr-2" /> Voltar para o Login
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Voltar para o Login
                     </Link>
                 </Button>
             </div>

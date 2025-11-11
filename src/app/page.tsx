@@ -1,10 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/app/header';
-import { CheckCircle, ArrowRight, MessageSquare, BarChart2, Bot, Star } from 'lucide-react';
+import { ArrowRight, Bot, Star } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 const features = [
   {
@@ -13,12 +19,51 @@ const features = [
     description: 'Crie 8 slides de carrossel com copy de alta conversão a partir de um único tópico.',
   },
   {
-    icon: <BarChart2 className="w-8 h-8 text-primary" />,
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        className="w-8 h-8 text-primary"
+      >
+        <path d="M12 12v-2" />
+        <path d="M15 15.5V14a2 2 0 00-2-2h-2a2 2 0 00-2 2v1.5" />
+        <path d="M12 12v-2" />
+        <path d="M12 22a10 10 0 100-20 10 10 0 000 20z" />
+        <path d="M12 12v-2" />
+      </svg>
+    ),
     title: 'Análise de Performance',
     description: 'Monitore métricas de engajamento para entender o que ressoa com seu público.',
   },
   {
-    icon: <MessageSquare className="w-8 h-8 text-primary" />,
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        className="w-8 h-8 text-primary"
+      >
+        <rect width="18" height="18" x="3" y="3" rx="2" />
+        <path d="M7 3v18" />
+        <path d="M3 7.5h4" />
+        <path d="M3 12h18" />
+        <path d="M3 16.5h4" />
+        <path d="M17 3v18" />
+        <path d="M17 7.5h4" />
+        <path d="M17 16.5h4" />
+      </svg>
+    ),
     title: 'Templates Prontos',
     description: 'Escolha entre layouts profissionais para garantir um design atraente e consistente.',
   },
@@ -45,13 +90,32 @@ const testimonials = [
   },
 ];
 
+const faqs = [
+    {
+        question: "Como a IA funciona para criar os carrosséis?",
+        answer: "Nossa IA foi treinada por especialistas em copywriting e marketing digital. Você fornece um tópico, e ela gera uma estrutura de 8 slides com títulos, conteúdo e sugestões de imagem, seguindo as melhores práticas para engajamento no Instagram."
+    },
+    {
+        question: "Preciso ter uma conta do Instagram para usar?",
+        answer: "Você pode gerar e editar carrosséis sem conectar sua conta. No entanto, para publicar diretamente e analisar métricas de performance, a conexão com seu perfil do Instagram é necessária."
+    },
+    {
+        question: "O Dunamis Post é gratuito?",
+        answer: "Oferecemos um plano gratuito robusto para você começar, com um limite generoso de gerações e análises. Também teremos planos pagos com funcionalidades avançadas para profissionais e agências."
+    },
+    {
+        question: "Posso personalizar os templates e a identidade da marca?",
+        answer: "Sim! Você pode configurar as cores, fontes e o tom de voz da sua marca para garantir que todo conteúdo gerado esteja alinhado com sua identidade visual e verbal."
+    }
+]
+
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="w-full py-20 md:py-32 lg:py-40 bg-card">
+        <section className="w-full py-20 md:py-32 lg:py-40 bg-card/50">
           <div className="container px-4 md:px-6 text-center">
             <div className="max-w-3xl mx-auto">
               <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl font-headline bg-dg-gradient bg-clip-text text-transparent">
@@ -63,9 +127,10 @@ export default function Home() {
               <div className="mt-8">
                 <Button asChild size="lg" className="bg-primary hover:bg-brand-accent text-primary-foreground">
                   <Link href="/signup">
-                    Teste Grátis Agora <ArrowRight className="ml-2 h-5 w-5" />
+                    Começar Gratuitamente <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
+                 <p className="text-xs text-muted-foreground mt-4">Não precisa de cartão de crédito.</p>
               </div>
             </div>
           </div>
@@ -94,7 +159,7 @@ export default function Home() {
 
 
         {/* Features Section */}
-        <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-card">
+        <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-card/50">
           <div className="container px-4 md:px-6">
             <div className="grid gap-12 md:grid-cols-3">
               {features.map((feature) => (
@@ -110,55 +175,8 @@ export default function Home() {
           </div>
         </section>
 
-         {/* Benefits Section */}
-        <section id="benefits" className="w-full py-12 md:py-24 lg:py-32">
-          <div className="container px-4 md:px-6">
-            <div className="grid items-center gap-6 lg:grid-cols-2 lg:gap-12">
-              <div className="space-y-4">
-                <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-                  Resultados Reais
-                </div>
-                <h2 className="text-3xl font-bold font-headline tracking-tighter sm:text-4xl">Menos tempo criando, mais tempo vendendo</h2>
-                <p className="text-muted-foreground">
-                  O Dunamis Post não é apenas um gerador de conteúdo. É uma ferramenta estratégica para quem quer transformar o Instagram em um canal de vendas previsível.
-                </p>
-                <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <CheckCircle className="mr-3 h-6 w-6 mt-1 text-primary" />
-                    <div>
-                      <h4 className="font-semibold">Economize horas, não minutos</h4>
-                      <p className="text-muted-foreground text-sm">Elimine o bloqueio criativo e automatize a criação de rascunhos de alta qualidade.</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="mr-3 h-6 w-6 mt-1 text-primary" />
-                     <div>
-                      <h4 className="font-semibold">Publique com consistência</h4>
-                      <p className="text-muted-foreground text-sm">Mantenha seu perfil ativo com conteúdo relevante sem esforço.</p>
-                    </div>
-                  </li>
-                   <li className="flex items-start">
-                    <CheckCircle className="mr-3 h-6 w-6 mt-1 text-primary" />
-                    <div>
-                      <h4 className="font-semibold">Aumente seu engajamento</h4>
-                      <p className="text-muted-foreground text-sm">Crie posts que seu público realmente quer salvar e compartilhar.</p>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-               <Image
-                src="https://placehold.co/550x550/222222/2AD66F?text=Exemplos+de+Post"
-                width="550"
-                height="550"
-                alt="Exemplos de posts gerados pela IA"
-                className="mx-auto aspect-square overflow-hidden rounded-xl object-cover"
-              />
-            </div>
-          </div>
-        </section>
-
         {/* Testimonials Section */}
-        <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-card">
+        <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
             <div className="text-center max-w-2xl mx-auto mb-12">
                 <h2 className="text-3xl font-bold font-headline tracking-tighter sm:text-4xl">Amado por quem cria e vende</h2>
@@ -182,7 +200,7 @@ export default function Home() {
                   </CardContent>
                    <div className="p-6 pt-0">
                         <div className="flex text-yellow-400">
-                            <Star /><Star /><Star /><Star /><Star />
+                            <Star className="fill-current" /><Star className="fill-current" /><Star className="fill-current" /><Star className="fill-current" /><Star className="fill-current" />
                         </div>
                     </div>
                 </Card>
@@ -190,10 +208,54 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* FAQ Section */}
+        <section id="faq" className="w-full py-12 md:py-24 lg:py-32 bg-card/50">
+            <div className="container px-4 md:px-6 max-w-3xl mx-auto">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold font-headline tracking-tighter sm:text-4xl">Perguntas Frequentes</h2>
+                    <p className="mt-4 text-muted-foreground">Tudo o que você precisa saber antes de começar.</p>
+                </div>
+                <Accordion type="single" collapsible className="w-full">
+                    {faqs.map((faq, i) => (
+                         <AccordionItem value={`item-${i}`} key={i}>
+                            <AccordionTrigger className="text-lg font-semibold">{faq.question}</AccordionTrigger>
+                            <AccordionContent className="text-base text-muted-foreground">
+                            {faq.answer}
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+            </div>
+        </section>
+
+
+        {/* Final CTA Section */}
+        <section className="w-full py-20 md:py-32">
+          <div className="container px-4 md:px-6 text-center">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl font-headline">
+                Pronto para otimizar seu conteúdo?
+              </h2>
+              <p className="mt-4 text-muted-foreground md:text-xl">
+                Crie sua conta gratuita e comece a gerar carrosséis que convertem em minutos.
+              </p>
+              <div className="mt-8">
+                <Button asChild size="lg">
+                  <Link href="/signup">
+                    Começar Gratuitamente <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
       </main>
 
       {/* Footer */}
-      <footer className="border-t">
+      <footer className="border-t bg-card/50">
         <div className="container px-4 md:px-6 py-6 flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} Dunamis Post. Todos os direitos reservados.</p>
              <div className="flex gap-4 mt-4 sm:mt-0">

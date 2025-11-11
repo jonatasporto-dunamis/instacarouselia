@@ -22,7 +22,7 @@ import { useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from 'firebase/auth';
 import Link from 'next/link';
-import { Header } from '@/components/app/header';
+import { Presentation } from 'lucide-react';
 
 const signupSchema = z.object({
   name: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres.'),
@@ -93,7 +93,16 @@ export default function SignupPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header />
+       <header className="p-4 border-b">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10 text-primary">
+            <Presentation className="w-6 h-6" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground font-headline">
+            Dunamis<span className="text-primary">Post</span>
+          </h1>
+        </Link>
+      </header>
       <main className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
