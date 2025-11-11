@@ -11,10 +11,13 @@ import { META_APP_ID, META_REDIRECT_URI } from "./config";
  * Initiates the Meta OAuth flow by redirecting the user to the Facebook login dialog.
  * This is the first step in connecting a user's Instagram account.
  * 
- * In a real application, this would be called from a client-side component,
- * e.g., when a user clicks a "Connect with Instagram" button.
+ * THIS IS NOW HANDLED BY the /api/meta/connect server route.
+ * This function is kept for reference but should not be used directly for the initial connection.
  */
 export function connectMetaAccount() {
+  // This logic is now on the server-side at /api/meta/connect
+  console.warn("connectMetaAccount is deprecated for initial connection. Use a link to /api/meta/connect instead.");
+  
   if (!META_APP_ID || META_APP_ID === 'YOUR_META_APP_ID_HERE') {
     alert('Error: Meta App ID is not configured. Please add it to src/lib/config.ts');
     return;
@@ -24,7 +27,6 @@ export function connectMetaAccount() {
   
   const dialogUrl = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${META_APP_ID}&redirect_uri=${encodeURIComponent(META_REDIRECT_URI)}&scope=${requiredPermissions}&response_type=code`;
 
-  // Redirect the user to the authorization screen
   window.location.href = dialogUrl;
 }
 

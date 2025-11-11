@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Instagram, Users, BarChart3, Heart, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
-import { connectMetaAccount } from '@/lib/meta';
+import Link from 'next/link';
 
 
 const mockStats = {
@@ -78,9 +78,11 @@ function DisconnectedView() {
                 <p className="text-muted-foreground mb-4">
                     Conecte sua conta para ver métricas de performance, analisar concorrentes e postar direto da plataforma.
                 </p>
-                <Button onClick={connectMetaAccount}>
+                <Button asChild>
+                  <Link href="/api/meta/connect" prefetch={false}>
                     <Instagram className="mr-2 h-4 w-4" />
                     Conectar com Instagram
+                  </Link>
                 </Button>
             </CardContent>
         </Card>
