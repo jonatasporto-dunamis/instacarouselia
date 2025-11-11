@@ -1,3 +1,6 @@
+
+'use client';
+
 import { Presentation } from 'lucide-react';
 import { AuthButton } from '@/components/app/auth-button';
 import Link from 'next/link';
