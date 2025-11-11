@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'InstaCarouselAI',
-  description: 'AI-powered Instagram carousel generator.',
+  title: 'Dunamis Post',
+  description: 'AI-powered social media post generator.',
 };
 
 export default function RootLayout({

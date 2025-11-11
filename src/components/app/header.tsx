@@ -7,7 +7,7 @@ export function Header() {
         <Presentation className="w-6 h-6" />
       </div>
       <h1 className="text-2xl font-bold text-foreground font-headline">
-        InstaCarousel<span className="text-primary">AI</span>
+        Dunamis<span className="text-primary">Post</span>
       </h1>
     </header>
   );
