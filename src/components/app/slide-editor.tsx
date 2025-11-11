@@ -7,6 +7,7 @@ import {
   ArrowUpToLine,
   Download,
   CaseSensitive,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { findImage } from '@/lib/imageApi';
+import { useState, useTransition } from 'react';
 
 type SlideEditorProps = {
   slide: Slide;
@@ -38,6 +41,7 @@ const layoutOptions: { value: Layout; label: string; icon: React.ElementType }[]
 
 export function SlideEditor({ slide, onUpdate }: SlideEditorProps) {
   const { toast } = useToast();
+  const [isFetching, startFetching] = useTransition();
 
   const handleExport = () => {
     toast({
@@ -46,6 +50,50 @@ export function SlideEditor({ slide, onUpdate }: SlideEditorProps) {
     });
     // In a real app, this would trigger a download.
     console.log('Exporting carousel...');
+  };
+
+  const handleFetchImage = () => {
+    if (!slide.imagePrompt) {
+        toast({
+            variant: 'destructive',
+            title: 'No Image Suggestion',
+            description: 'The AI did not provide a suggestion for this slide.'
+        });
+        return;
+    }
+    
+    startFetching(async () => {
+      try {
+        const apiKeys = {
+            unsplash: localStorage.getItem('image.unsplash.key') || undefined,
+            pexels: localStorage.getItem('image.pexels.key') || undefined,
+            pixabay: localStorage.getItem('image.pixabay.key') || undefined,
+            bing: localStorage.getItem('image.bing.key') || undefined,
+        };
+        
+        toast({
+            title: 'Fetching Image...',
+            description: `Searching for "${slide.imagePrompt}"`
+        });
+
+        const result = await findImage(slide.imagePrompt, apiKeys);
+        
+        onUpdate(slide.id, { imageUrl: result.imageUrl, imageHint: result.altText });
+
+        toast({
+            title: 'Image Found!',
+            description: `Loaded image from ${result.provider}.`
+        });
+
+      } catch (error) {
+        console.error(error);
+        toast({
+            variant: 'destructive',
+            title: 'Image Search Failed',
+            description: error instanceof Error ? error.message : 'An unknown error occurred.'
+        });
+      }
+    });
   };
   
   return (
@@ -77,6 +125,22 @@ export function SlideEditor({ slide, onUpdate }: SlideEditorProps) {
             onChange={e => onUpdate(slide.id, { content: e.target.value })}
             rows={5}
           />
+        </div>
+
+        <div className="space-y-2">
+            <Label htmlFor={`prompt-${slide.id}`}>Image Suggestion</Label>
+            <div className="flex gap-2">
+                <Input
+                    id={`prompt-${slide.id}`}
+                    value={slide.imagePrompt}
+                    onChange={(e) => onUpdate(slide.id, { imagePrompt: e.target.value })}
+                    placeholder="AI suggestion for the image..."
+                />
+                <Button variant="secondary" onClick={handleFetchImage} disabled={isFetching || !slide.imagePrompt}>
+                    <ImageIcon className={isFetching ? 'animate-pulse' : ''}/>
+                    <span className="sr-only">Fetch Image</span>
+                </Button>
+            </div>
         </div>
 
         <div className="space-y-3">
