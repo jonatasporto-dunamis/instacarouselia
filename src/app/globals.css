@@ -8,7 +8,7 @@ body {
 
 @layer base {
   :root {
-    --background: 147 50% 96%; /* Corrigido de brand.light #E8FFF2 */
+    --background: 0 0% 100%; /* Alterado para branco */
     --foreground: 240 10% 13%; /* brand.dark #222222 */
     --card: 0 0% 100%;
     --card-foreground: 240 10% 13%; /* brand.dark */
