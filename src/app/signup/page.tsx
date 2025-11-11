@@ -42,10 +42,10 @@ export default function SignupPage() {
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
+      name: 'Admin User',
+      email: 'admin@email.com',
+      password: 'admin1234',
+      confirmPassword: 'admin1234',
     },
   });
 
