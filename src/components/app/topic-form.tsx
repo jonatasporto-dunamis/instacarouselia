@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,7 +43,7 @@ export function TopicForm({ onGenerate, isGenerating }: TopicFormProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <h2 className="text-xl font-bold font-headline">Create Your Carousel</h2>
         <p className="text-muted-foreground">

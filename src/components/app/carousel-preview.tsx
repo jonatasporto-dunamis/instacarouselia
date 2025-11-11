@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -10,17 +11,21 @@ import {
 } from '@/components/ui/carousel';
 import { SlideCanvas } from './slide-canvas';
 import type { Slide } from '@/lib/types';
+import { SlideFormat } from './carousel-generator';
+
 
 type CarouselPreviewProps = {
   slides: Slide[];
   setApi: (api: CarouselApi) => void;
   currentSlideIndex: number;
+  format: SlideFormat;
 };
 
 export function CarouselPreview({
   slides,
   setApi,
   currentSlideIndex,
+  format,
 }: CarouselPreviewProps) {
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -29,7 +34,7 @@ export function CarouselPreview({
           {slides.map(slide => (
             <CarouselItem key={slide.id}>
               <div className="p-1">
-                <SlideCanvas slide={slide} />
+                <SlideCanvas slide={slide} format={format}/>
               </div>
             </CarouselItem>
           ))}

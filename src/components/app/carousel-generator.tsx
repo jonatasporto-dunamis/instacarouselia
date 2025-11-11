@@ -12,9 +12,13 @@ import { SlideEditor } from './slide-editor';
 import { CarouselPreview } from './carousel-preview';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, Square, RectangleVertical, Smartphone } from 'lucide-react';
 import { BrandIdentityForm } from './brand-identity-form';
 import { ApiSettingsForm } from './api-settings-form';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Label } from '@/components/ui/label';
+
+export type SlideFormat = 'square' | 'portrait' | 'story';
 
 export function CarouselGenerator() {
   const [isPending, startTransition] = useTransition();
@@ -23,6 +27,14 @@ export function CarouselGenerator() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [api, setApi] = useState<CarouselApi>();
+  const [format, setFormat] = useState<SlideFormat>('portrait');
+
+  useEffect(() => {
+    const savedFormat = localStorage.getItem('slide.format') as SlideFormat | null;
+    if (savedFormat) {
+      setFormat(savedFormat);
+    }
+  }, []);
 
   useEffect(() => {
     if (!api) return;
@@ -34,6 +46,13 @@ export function CarouselGenerator() {
       api.off('select', onSelect);
     };
   }, [api]);
+
+  const handleSetFormat = (newFormat: SlideFormat) => {
+    if (newFormat) {
+        setFormat(newFormat);
+        localStorage.setItem('slide.format', newFormat);
+    }
+  }
 
   const handleGenerateSlides = (topic: string) => {
     startTransition(async () => {
@@ -90,10 +109,29 @@ export function CarouselGenerator() {
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
             <TabsContent value="generator" className="p-6">
-              <TopicForm
-                onGenerate={handleGenerateSlides}
-                isGenerating={isPending}
-              />
+              <div className="space-y-6">
+                <TopicForm
+                  onGenerate={handleGenerateSlides}
+                  isGenerating={isPending}
+                />
+                <div className="space-y-3">
+                  <Label>Format</Label>
+                   <ToggleGroup type="single" value={format} onValueChange={handleSetFormat} className="grid grid-cols-3">
+                        <ToggleGroupItem value="square" aria-label="Square format">
+                            <Square className="h-4 w-4 mr-2"/>
+                            Square
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="portrait" aria-label="Portrait format">
+                            <RectangleVertical className="h-4 w-4 mr-2"/>
+                            Portrait
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="story" aria-label="Story format">
+                            <Smartphone className="h-4 w-4 mr-2"/>
+                            Story
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                </div>
+              </div>
               {slides.length > 0 && currentSlide && (
                 <SlideEditor
                   key={currentSlide.id}
@@ -129,6 +167,7 @@ export function CarouselGenerator() {
             slides={slides}
             setApi={setApi}
             currentSlideIndex={currentSlideIndex}
+            format={format}
           />
         ) : (
           <Card className="aspect-square w-full max-w-2xl mx-auto flex flex-col items-center justify-center text-center shadow-lg bg-card/80 border-dashed">

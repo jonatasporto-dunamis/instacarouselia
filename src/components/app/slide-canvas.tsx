@@ -10,25 +10,37 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
+import type { SlideFormat } from './carousel-generator';
+import { cn } from '@/lib/utils';
 
 type SlideCanvasProps = {
   slide: Slide;
+  format: SlideFormat;
 };
 
-export function SlideCanvas({ slide }: SlideCanvasProps) {
+const formatClasses: Record<SlideFormat, string> = {
+    square: 'aspect-square',
+    portrait: 'aspect-[4/5]',
+    story: 'aspect-[9/16]',
+}
+
+export function SlideCanvas({ slide, format = 'portrait' }: SlideCanvasProps) {
   const templateId = slide.layout || 'classic';
   const template = getTemplate(templateId);
 
   if (!template) {
     return (
-      <div className="aspect-[1080/1350] w-full flex items-center justify-center bg-destructive text-destructive-foreground">
+      <div className="aspect-[4/5] w-full flex items-center justify-center bg-destructive text-destructive-foreground">
         <p>Error: Template "{templateId}" not found.</p>
       </div>
     );
   }
 
   return (
-    <div className="relative aspect-[1080/1350] w-full bg-muted/50 overflow-hidden rounded-lg shadow-xl border">
+    <div className={cn(
+        "relative w-full bg-muted/50 overflow-hidden rounded-lg shadow-xl border",
+        formatClasses[format]
+    )}>
       {template.render({ data: slide })}
       {slide.imageProvider && slide.imageProvider !== 'none' && (
         <TooltipProvider>
