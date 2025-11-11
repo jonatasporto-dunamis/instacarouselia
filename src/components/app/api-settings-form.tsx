@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import React from 'react';
+import { Separator } from '@/components/ui/separator';
 
 const apiSettingsSchema = z.object({
   // AI Provider
@@ -308,5 +309,3 @@ export function ApiSettingsForm() {
     </div>
   );
 }
-
-    
