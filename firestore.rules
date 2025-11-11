@@ -1,0 +1,90 @@
+/**
+ * @fileoverview Firestore Security Rules for the Instagram Carousel Generator App.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model. Users can only create, read, update,
+ * and delete carousels and slides that belong to them. This ensures data privacy and prevents
+ * unauthorized access.
+ *
+ * Data Structure:
+ * The data is organized hierarchically under `/users/{userId}`. Each user has a collection of
+ * carousels (`/users/{userId}/carousels/{carouselId}`) and each carousel has a collection of
+ * slides (`/users/{userId}/carousels/{carouselId}/slides/{slideId}`).
+ *
+ * Key Security Decisions:
+ * - User listing is explicitly denied.
+ * - All data is private by default and requires authentication.
+ * - Data consistency between the path and document fields is enforced to prevent unauthorized
+ *   data manipulation.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Restricts access to the /users collection. Users cannot be listed.
+     * @path /users
+     * @allow None. Users cannot be listed.
+     * @deny None. No one can list users.
+     * @principle Prevents enumeration of user accounts.
+     */
+    match /users {
+      allow list: if false;
+    }
+
+    /**
+     * @description Manages access to carousels owned by a specific user.
+     * @path /users/{userId}/carousels/{carouselId}
+     * @allow (create) User 'user_abc' can create a carousel if request.auth.uid == 'user_abc'.
+     * @allow (get) User 'user_abc' can get a carousel if request.auth.uid == 'user_abc'.
+     * @allow (update) User 'user_abc' can update a carousel if request.auth.uid == 'user_abc' and the carousel exists.
+     * @allow (delete) User 'user_abc' can delete a carousel if request.auth.uid == 'user_abc' and the carousel exists.
+     * @deny (create) User 'user_xyz' cannot create a carousel under /users/user_abc/carousels if request.auth.uid != 'user_abc'.
+     * @deny (get) User 'user_xyz' cannot get a carousel under /users/user_abc/carousels if request.auth.uid != 'user_abc'.
+     * @deny (update) User 'user_xyz' cannot update a carousel under /users/user_abc/carousels if request.auth.uid != 'user_abc'.
+     * @deny (delete) User 'user_xyz' cannot delete a carousel under /users/user_abc/carousels if request.auth.uid != 'user_abc'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/carousels/{carouselId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages access to slides within a user's carousel.
+     * @path /users/{userId}/carousels/{carouselId}/slides/{slideId}
+     * @allow (create) User 'user_abc' can create a slide if request.auth.uid == 'user_abc'.
+     * @allow (get) User 'user_abc' can get a slide if request.auth.uid == 'user_abc'.
+     * @allow (update) User 'user_abc' can update a slide if request.auth.uid == 'user_abc' and the slide exists.
+     * @allow (delete) User 'user_abc' can delete a slide if request.auth.uid == 'user_abc' and the slide exists.
+     * @deny (create) User 'user_xyz' cannot create a slide under /users/user_abc/carousels/{carouselId}/slides if request.auth.uid != 'user_abc'.
+     * @deny (get) User 'user_xyz' cannot get a slide under /users/user_abc/carousels/{carouselId}/slides if request.auth.uid != 'user_abc'.
+     * @deny (update) User 'user_xyz' cannot update a slide under /users/user_abc/carousels/{carouselId}/slides if request.auth.uid != 'user_abc'.
+     * @deny (delete) User 'user_xyz' cannot delete a slide under /users/user_abc/carousels/{carouselId}/slides if request.auth.uid != 'user_abc'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/carousels/{carouselId}/slides/{slideId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+  }
+
+  // Helper functions
+  function isSignedIn() {
+    return request.auth != null;
+  }
+
+  function isOwner(userId) {
+    return request.auth.uid == userId;
+  }
+
+  function isExistingOwner(userId) {
+    return isOwner(userId) && resource != null;
+  }
+}
