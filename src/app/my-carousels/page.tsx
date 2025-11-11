@@ -48,18 +48,18 @@ function CarouselCard({ carousel }: { carousel: Carousel }) {
 
 function LoadingSkeleton() {
     return (
-        <div className="flex flex-col">
-            <div className="p-6">
+        <Card className="flex flex-col">
+            <CardHeader>
                 <Skeleton className="h-6 w-3/4 mb-2" />
                 <Skeleton className="h-4 w-1/2" />
-            </div>
-            <div className="p-6 pt-0 flex-grow">
+            </CardHeader>
+            <CardContent className="flex-grow">
                  <Skeleton className="aspect-[4/5] w-full" />
-            </div>
-            <div className="p-6 pt-0">
+            </CardContent>
+            <CardFooter>
                 <Skeleton className="h-10 w-full" />
-            </div>
-        </div>
+            </CardFooter>
+        </Card>
     )
 }
 
@@ -118,3 +118,5 @@ export default function MyCarouselsPage() {
     </AppLayout>
   );
 }
+
+    
