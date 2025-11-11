@@ -16,66 +16,72 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Save, BrainCircuit, ImageIcon } from 'lucide-react';
+import { Save, BrainCircuit } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { useTransition } from 'react';
-import { saveApiKeysAction } from '@/app/actions';
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const apiSettingsSchema = z.object({
-  geminiApiKey: z.string().optional(),
-  gptApiKey: z.string().optional(),
-  grokApiKey: z.string().optional(),
-  qwenApiKey: z.string().optional(),
-  deepseekApiKey: z.string().optional(),
-  pixabayApiKey: z.string().optional(),
-  pexelsApiKey: z.string().optional(),
-  unsplashApiKey: z.string().optional(),
-  cloudinaryApiKey: z.string().optional(),
-  bingImagesApiKey: z.string().optional(),
+  provider: z.enum(['openai', 'gemini']).default('openai'),
+  apiKey: z.string().min(1, 'API Key is required.'),
+  model: z.string().optional(),
 });
 
 export function ApiSettingsForm() {
   const { toast } = useToast();
-  const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof apiSettingsSchema>>({
     resolver: zodResolver(apiSettingsSchema),
-    defaultValues: {
-      geminiApiKey: '',
-      gptApiKey: '',
-      grokApiKey: '',
-      qwenApiKey: '',
-      deepseekApiKey: '',
-      pixabayApiKey: '',
-      pexelsApiKey: '',
-      unsplashApiKey: '',
-      cloudinaryApiKey: '',
-      bingImagesApiKey: '',
+    defaultValues: () => {
+      if (typeof window === 'undefined') {
+        return {
+          provider: 'openai',
+          apiKey: '',
+          model: '',
+        };
+      }
+      return {
+        provider:
+          (localStorage.getItem('ai.provider') as 'openai' | 'gemini') ||
+          'openai',
+        apiKey: localStorage.getItem('ai.key') || '',
+        model: localStorage.getItem('ai.model') || '',
+      };
     },
   });
 
   function onSubmit(values: z.infer<typeof apiSettingsSchema>) {
-    startTransition(async () => {
-      const result = await saveApiKeysAction(values);
-      if (result.error) {
-        toast({
-          variant: 'destructive',
-          title: 'Error Saving Keys',
-          description: result.error,
-        });
+    try {
+      localStorage.setItem('ai.provider', values.provider);
+      localStorage.setItem('ai.key', values.apiKey);
+      if (values.model) {
+        localStorage.setItem('ai.model', values.model);
       } else {
-        toast({
-          title: 'API Settings Saved',
-          description: 'Your API keys have been configured. You may need to restart the application for changes to take effect.',
-        });
+        localStorage.removeItem('ai.model');
       }
-    });
+
+      toast({
+        title: 'API Settings Saved',
+        description: 'Your settings have been saved to the local browser.',
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error Saving Settings',
+        description:
+          'Could not save settings to localStorage. Your browser might be in private mode or has storage disabled.',
+      });
+    }
   }
 
   return (
@@ -83,160 +89,88 @@ export function ApiSettingsForm() {
       <div>
         <h2 className="text-xl font-bold font-headline">API Settings</h2>
         <p className="text-muted-foreground">
-          Configure your API keys for generative features. Restart the app after saving.
+          Configure your preferred AI provider. These settings are saved in your
+          browser.
         </p>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <Accordion type="multiple" className="w-full space-y-4" defaultValue={['ai-apis']}>
+          <Accordion
+            type="single"
+            collapsible
+            className="w-full space-y-4"
+            defaultValue="ai-apis"
+          >
             <AccordionItem value="ai-apis" className="border rounded-lg px-4">
               <AccordionTrigger className="font-semibold">
                 <div className="flex items-center gap-2">
                   <BrainCircuit className="h-5 w-5" />
-                  AI APIs
+                  AI Provider
                 </div>
               </AccordionTrigger>
               <AccordionContent className="space-y-4 pt-4">
                 <FormField
                   control={form.control}
-                  name="geminiApiKey"
+                  name="provider"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Gemini API Key (Google AI)</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter your Gemini key" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="gptApiKey"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>GPT (OpenAI) API Key</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter your OpenAI key" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="grokApiKey"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Grok API Key</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter your Grok key" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="qwenApiKey"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Qwen API Key</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter your Qwen key" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="deepseekApiKey"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>DeepSeek API Key</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter your DeepSeek key" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="image-apis" className="border rounded-lg px-4">
-              <AccordionTrigger className="font-semibold">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="h-5 w-5" />
-                  Image APIs
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="space-y-4 pt-4">
-                <FormField
-                  control={form.control}
-                  name="pixabayApiKey"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pixabay API Key</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter your Pixabay key" {...field} />
-                      </FormControl>
-                       <FormDescription>
-                        Picsum does not require an API key.
+                      <FormLabel>Provider</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an AI provider" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="openai">OpenAI (GPT)</SelectItem>
+                          <SelectItem value="gemini">Google (Gemini)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Select which AI service to use for generation.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                 <FormField
+                <FormField
                   control={form.control}
-                  name="pexelsApiKey"
+                  name="apiKey"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Pexels API Key</FormLabel>
+                      <FormLabel>API Key</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Enter your Pexels key" {...field} />
+                        <Input
+                          type="password"
+                          placeholder="Enter your API key"
+                          {...field}
+                        />
                       </FormControl>
+                      <FormDescription>
+                        Your key is stored only in your browser.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
                   control={form.control}
-                  name="unsplashApiKey"
+                  name="model"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Unsplash API Key</FormLabel>
+                      <FormLabel>Model (Optional)</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Enter your Unsplash key" {...field} />
+                        <Input
+                          placeholder="e.g., gpt-4o-mini"
+                          {...field}
+                        />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="cloudinaryApiKey"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cloudinary API Key</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter your Cloudinary key" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="bingImagesApiKey"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Bing Images API Key</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter your Bing Images key" {...field} />
-                      </FormControl>
+                      <FormDescription>
+                        Override the default model for the selected provider.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -245,9 +179,9 @@ export function ApiSettingsForm() {
             </AccordionItem>
           </Accordion>
 
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button type="submit" className="w-full">
             <Save className="mr-2 h-4 w-4" />
-            {isPending ? 'Saving...' : 'Save API Keys'}
+            Save Settings
           </Button>
         </form>
       </Form>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -36,7 +37,20 @@ export function CarouselGenerator() {
 
   const handleGenerateSlides = (topic: string) => {
     startTransition(async () => {
-      const result = await generateSlidesAction(topic);
+      const provider = localStorage.getItem('ai.provider') as
+        | 'openai'
+        | 'gemini'
+        | null;
+      const apiKey = localStorage.getItem('ai.key') || undefined;
+      const model = localStorage.getItem('ai.model') || undefined;
+
+      const result = await generateSlidesAction({
+        topic,
+        provider: provider || undefined,
+        apiKey,
+        model,
+      });
+
       if (result.error) {
         toast({
           variant: 'destructive',
